@@ -2,495 +2,486 @@ import pygame
 import os
 import random
 
+# Pygame es a mixer inicializalasa
 pygame.init()
-pygame.mixer.init()  # Hangmixer inicializálása
+pygame.mixer.init()  # Hangmixer inicializalasa
 
-# Hangfájlok betöltése
+# --- Eszkozbetoltes (Hangok) ---
 try:
-    jump_sound = pygame.mixer.Sound("Assets/Sounds/jump.wav")
-    duck_sound = pygame.mixer.Sound("Assets/Sounds/duck.wav")  # Ha a Viktor lefelé nyomja
-    collision_sound = pygame.mixer.Sound("Assets/Sounds/collision.wav")
-    coin_sound = pygame.mixer.Sound("Assets/Sounds/coin.wav")
-    game_over_sound = pygame.mixer.Sound("Assets/Sounds/game_over.wav")
+    ugras_hang = pygame.mixer.Sound("Assets/Sounds/jump.wav")
+    guggolas_hang = pygame.mixer.Sound("Assets/Sounds/duck.wav")
+    utkozes_hang = pygame.mixer.Sound("Assets/Sounds/collision.wav")
+    penz_hang = pygame.mixer.Sound("Assets/Sounds/coin.wav") # Penz (korabban felho) hangja
+    jatek_vege_hang = pygame.mixer.Sound("Assets/Sounds/game_over.wav")
     pygame.mixer.music.load("Assets/Sounds/background_music.mp3")
-    pygame.mixer.music.play(-1)  # Háttérzene folyamatos lejátszása (-1 loop)
-except pygame.error as e:
-    print(f"Hiba a hangfájlok betöltésekor: {e}")
-    raise SystemExit(f"Hiányzó hangfájlok. Ellenőrizd az 'Assets/Sounds' könyvtárat.")
-except FileNotFoundError as e:
-    print(f"Hiba a hangfájl megnyitásakor: {e}")
-    raise SystemExit(f"Hiányzó hangfájl. Ellenőrizd az 'Assets/Sounds' könyvtárat.")
+    pygame.mixer.music.play(-1)  # Hatterzene lejatszasa vegtelenitve
+except pygame.error as hiba_hangbetoltes:
+    print(f"Hiba a hangfajlok betoltesekor: {hiba_hangbetoltes}")
+    raise SystemExit("Hianyzo hangfajlok. Kerlek ellenorizd az 'Assets/Sounds' konyvtarat.")
+except FileNotFoundError as hiba_fajlnemtalalhato_hang:
+    print(f"Hiba a hangfajl megnyitasakor: {hiba_fajlnemtalalhato_hang}")
+    raise SystemExit("Hianyzo hangfajl. Kerlek ellenorizd az 'Assets/Sounds' konyvtarat.")
 
-# Global Constants
-SCREEN_HEIGHT = 600
-SCREEN_WIDTH = 1100
-SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Vége van kicsi")  # Ablak címsorának beállítása
+# --- Globalis Konstansok ---
+KEPERNYO_MAGASSAG = 600
+KEPERNYO_SZELESSEG = 1100
+KEPERNYO = pygame.display.set_mode((KEPERNYO_SZELESSEG, KEPERNYO_MAGASSAG))
+pygame.display.set_caption("Vége van kicsi")  # Ablak cimenek beallitasa
 
-RUNNING = []
-JUMPING = None
-DUCKING = []
-SMALL_AVOCADO = []
-LARGE_AVOCADO = []
-HELI = []
-CLOUD = None
-BACKGROUND = None
-BG = None
-LANDING_PAGE = None # Új változó a kezdőoldal hátterének
+# --- Eszkoztarolas (Kepek) ---
+FUTO_KEPEK = []
+UGRO_KEP = None
+GUGGOLO_KEPEK = []
+KIS_AVOKADO_KEPEK = []
+NAGY_AVOKADO_KEPEK = []
+HELI_KEPEK = []
+PENZ_KEP = None
+HATTER_KEP = None
+KEZDOOLDAL_KEP = None
 
+# --- Eszkozbetoltes (Kepek) ---
 try:
-    RUNNING = [
+    FUTO_KEPEK = [
         pygame.image.load(os.path.join("Assets/Viktor", "ViktorRun1.png")),
         pygame.image.load(os.path.join("Assets/Viktor", "ViktorRun2.png")),
     ]
-    JUMPING = pygame.image.load(os.path.join("Assets/Viktor", "ViktorJump.png"))
-    DUCKING = [
+    UGRO_KEP = pygame.image.load(os.path.join("Assets/Viktor", "ViktorJump.png"))
+    GUGGOLO_KEPEK = [
         pygame.image.load(os.path.join("Assets/Viktor", "ViktorDuck1.png")),
         pygame.image.load(os.path.join("Assets/Viktor", "ViktorDuck2.png")),
     ]
-    SMALL_AVOCADO = [
+    KIS_AVOKADO_KEPEK = [
         pygame.image.load(os.path.join("Assets/Avocado", "SmallAvocado1.png")),
         pygame.image.load(os.path.join("Assets/Avocado", "SmallAvocado2.png")),
         pygame.image.load(os.path.join("Assets/Avocado", "SmallAvocado3.png")),
     ]
-    LARGE_AVOCADO = [
+    NAGY_AVOKADO_KEPEK = [
         pygame.image.load(os.path.join("Assets/Avocado", "LargeAvocado1.png")),
         pygame.image.load(os.path.join("Assets/Avocado", "LargeAvocado2.png")),
     ]
-    HELI = [
+    HELI_KEPEK = [
         pygame.image.load(os.path.join("Assets/Heli", "Heli1.png")),
         pygame.image.load(os.path.join("Assets/Heli", "Heli2.png")),
     ]
-    CLOUD = pygame.image.load(os.path.join("Assets/Other", "Cloud.png"))
-    BACKGROUND = pygame.image.load(os.path.join("Assets/Other", "background.png"))  # Új háttér betöltése
-    BG = pygame.image.load(os.path.join("Assets/Other", "Track.png"))
-    LANDING_PAGE = pygame.image.load(os.path.join("Assets/Other", "landingpage.png")) # Kezdőoldal hátterének betöltése
-except pygame.error as e:
-    print(f"Hiba a képek betöltésekor: {e}")
-    raise SystemExit(f"Hiányzó képfájlok. Ellenőrizd az 'Assets' könyvtárat.")
-except FileNotFoundError as e:
-    print(f"Hiba a képfájl megnyitásakor: {e}")
-    raise SystemExit(f"Hiányzó képfájl. Ellenőrizd az 'Assets' könyvtárat.")
+    PENZ_KEP = pygame.image.load(os.path.join("Assets/Other", "Cloud.png")) # Az eredeti kepfajl neve "Cloud.png" marad
+    HATTER_KEP = pygame.image.load(os.path.join("Assets/Other", "background.png"))
+    KEZDOOLDAL_KEP = pygame.image.load(os.path.join("Assets/Other", "landingpage.png"))
+except pygame.error as hiba_kepbetoltes:
+    print(f"Hiba a kepfajlok betoltesekor: {hiba_kepbetoltes}")
+    raise SystemExit("Hianyzo kepfajlok. Kerlek ellenorizd az 'Assets' konyvtarat.")
+except FileNotFoundError as hiba_fajlnemtalalhato_kep:
+    print(f"Hiba a kepfajl megnyitasakor: {hiba_fajlnemtalalhato_kep}")
+    raise SystemExit("Hianyzo kepfajl. Kerlek ellenorizd az 'Assets' konyvtarat.")
 
 
-class Viktosaur:
-    X_POS = 80
-    Y_POS = 310
-    Y_POS_DUCK = 340
-    JUMP_VEL = 8.5
-    GROUND_LEVEL = 380  # Új: a talaj szintje
+class ViktorSaurus: # Korabban Viktosaur
+    """
+    A jatekos karakteret, ViktorSaurus-t reprezentalja.
+    Kezeli a mozgasat (futas, ugras, guggolas) es animaciojat.
+    """
+    X_POZ = 80
+    Y_POZ = 310
+    Y_POZ_GUGGOLAS = 340
+    UGRAS_ALAP_SEBESSEG = 8.5 # Konstans ugrasi sebesseg
+    TALAJ_SZINT = 380
 
     def __init__(self):
-        self.duck_img = DUCKING
-        self.run_img = RUNNING
-        self.jump_img = JUMPING
+        """Inicializalja a ViktorSaurus karaktert."""
+        self.guggolo_kep_lista = GUGGOLO_KEPEK
+        self.futo_kep_lista = FUTO_KEPEK
+        self.ugro_alap_kep = UGRO_KEP # egyetlen kep az ugrashoz
 
-        self.Viktor_duck = False
-        self.Viktor_run = True
-        self.Viktor_jump = False
+        self.guggol_allapot = False
+        self.fut_allapot = True
+        self.ugrik_allapot = False
 
-        self.step_index = 0
-        self.jump_vel = self.JUMP_VEL
-        self.image = self.run_img[0]
-        self.Viktor_rect = self.image.get_rect()
-        self.Viktor_rect.x = self.X_POS
-        self.Viktor_rect.y = self.Y_POS
-        self.mask = pygame.mask.from_surface(
-            self.image
-        )  # Maszk létrehozása a pontosabb ütközéshez
+        self.lepes_index = 0
+        self.aktualis_ugras_sebesseg = self.UGRAS_ALAP_SEBESSEG
+        self.kep = self.futo_kep_lista[0] # Aktualisan megjelenitendo kep
+        self.terulet = self.kep.get_rect() # A karakter terulete (pozicio es meret)
+        self.terulet.x = self.X_POZ
+        self.terulet.y = self.Y_POZ
+        self.maszk = pygame.mask.from_surface(self.kep) # Pixel-pontos utkozeshez
 
-    def update(self, userInput):
-        if self.Viktor_duck:
-            self.duck()
-        if self.Viktor_run:
-            self.run()
-        if self.Viktor_jump:
-            self.jump()
+    def frissites(self, felhasznaloi_bevitel):
+        """Frissiti ViktorSaurus allapotat a felhasznaloi bevitel alapjan."""
+        if self.guggol_allapot:
+            self.guggol()
+        elif self.fut_allapot:
+            self.fut()
+        elif self.ugrik_allapot:
+            self.ugras()
 
-        if self.step_index >= 10:
-            self.step_index = 0
+        if self.lepes_index >= 10:
+            self.lepes_index = 0
 
-        if userInput[pygame.K_UP] and not self.Viktor_jump:
-            self.Viktor_duck = False
-            self.Viktor_run = False
-            self.Viktor_jump = True
-            jump_sound.play()  # Ugrás hang lejátszása
-        elif userInput[pygame.K_DOWN] and not self.Viktor_jump:
-            self.Viktor_duck = True
-            self.Viktor_run = False
-            self.Viktor_jump = False
-            duck_sound.play()  # Duck hang lejátszása
-        elif not (self.Viktor_jump or userInput[pygame.K_DOWN]):
-            self.Viktor_duck = False
-            self.Viktor_run = True
-            self.Viktor_jump = False
+        if felhasznaloi_bevitel[pygame.K_UP] and not self.ugrik_allapot:
+            self.guggol_allapot = False
+            self.fut_allapot = False
+            self.ugrik_allapot = True
+            ugras_hang.play()
+        elif felhasznaloi_bevitel[pygame.K_DOWN] and not self.ugrik_allapot:
+            self.guggol_allapot = True
+            self.fut_allapot = False
+            self.ugrik_allapot = False
+            guggolas_hang.play()
+        elif not (self.ugrik_allapot or felhasznaloi_bevitel[pygame.K_DOWN]):
+            self.guggol_allapot = False
+            self.fut_allapot = True
+            self.ugrik_allapot = False
 
-    def duck(self):
-        self.image = self.duck_img[self.step_index // 5]
-        self.Viktor_rect = self.image.get_rect()
-        self.Viktor_rect.x = self.X_POS
-        self.Viktor_rect.y = self.Y_POS_DUCK
-        self.step_index += 1
-        self.mask = pygame.mask.from_surface(
-            self.image
-        )  # Maszk frissítése
+    def guggol(self):
+        """Kezeli a guggolas animaciojat es allapotat."""
+        self.kep = self.guggolo_kep_lista[self.lepes_index // 5]
+        self.terulet = self.kep.get_rect()
+        self.terulet.x = self.X_POZ
+        self.terulet.y = self.Y_POZ_GUGGOLAS
+        self.lepes_index += 1
+        self.maszk = pygame.mask.from_surface(self.kep)
 
-    def run(self):
-        self.image = self.run_img[self.step_index // 5]
-        self.Viktor_rect = self.image.get_rect()
-        self.Viktor_rect.x = self.X_POS
-        self.Viktor_rect.y = self.Y_POS
-        self.step_index += 1
-        self.mask = pygame.mask.from_surface(
-            self.image
-        )  # Maszk frissítése
+    def fut(self):
+        """Kezeli a futas animaciojat es allapotat."""
+        self.kep = self.futo_kep_lista[self.lepes_index // 5]
+        self.terulet = self.kep.get_rect()
+        self.terulet.x = self.X_POZ
+        self.terulet.y = self.Y_POZ
+        self.lepes_index += 1
+        self.maszk = pygame.mask.from_surface(self.kep)
 
-    def jump(self):
-        self.image = self.jump_img
-        if self.Viktor_jump:
-            self.Viktor_rect.y -= self.jump_vel * 4
-            self.jump_vel -= 0.8
-            # Korlátozzuk a ugrást a talajszinthez képest
-            if (
-                self.Viktor_rect.y >= self.GROUND_LEVEL - self.image.get_height()
-            ):
-                self.Viktor_rect.y = (
-                    self.GROUND_LEVEL - self.image.get_height()
-                )
-                self.Viktor_jump = False
-                self.jump_vel = self.JUMP_VEL
-        elif not self.Viktor_jump:
-            self.Viktor_rect.y = self.GROUND_LEVEL - self.image.get_height()
-        self.mask = pygame.mask.from_surface(
-            self.image
-        )  # Maszk frissítése
+    def ugras(self):
+        """Kezeli az ugrasi muveletet es fizikat."""
+        self.kep = self.ugro_alap_kep
+        if self.ugrik_allapot:
+            self.terulet.y -= self.aktualis_ugras_sebesseg * 4
+            self.aktualis_ugras_sebesseg -= 0.8
+            if self.terulet.y >= self.TALAJ_SZINT - self.kep.get_height():
+                self.terulet.y = self.TALAJ_SZINT - self.kep.get_height()
+                self.ugrik_allapot = False
+                self.aktualis_ugras_sebesseg = self.UGRAS_ALAP_SEBESSEG
+        elif not self.ugrik_allapot:
+             self.terulet.y = self.TALAJ_SZINT - self.kep.get_height()
+        self.maszk = pygame.mask.from_surface(self.kep)
 
-    def draw(self, SCREEN):
-        SCREEN.blit(self.image, (self.Viktor_rect.x, self.Viktor_rect.y))
+    def rajzol(self, rajzfelulet):
+        """Kirajzolja ViktorSaurus-t a megadott feluletre."""
+        rajzfelulet.blit(self.kep, (self.terulet.x, self.terulet.y))
 
 
-class Cloud:
+class Penz: # Korabban Cloud
+    """Egy penz objektumot reprezental, amelyet pontokert lehet osszegyujteni."""
     def __init__(self):
-        self.x = SCREEN_WIDTH + random.randint(800, 1000)
-        self.y = random.randint(100, 150)
-        self.image = CLOUD
-        self.width = self.image.get_width()
-        self.collided = False  # Jelzi, hogy ütközött-e már a felhővel
-        self.rect = self.image.get_rect(topleft=(self.x, self.y))
-        self.mask = pygame.mask.from_surface(
-            self.image
-        )  # Maszk létrehozása
-        self.visible = True # <<< ADDED: To control visibility
+        """Inicializal egy penz objektumot."""
+        self.kep = PENZ_KEP
+        self.szelesseg = self.kep.get_width()
+        self.x_poz = KEPERNYO_SZELESSEG + random.randint(800, 1000)
+        self.y_poz = random.randint(100, 150)
+        self.terulet = self.kep.get_rect(topleft=(self.x_poz, self.y_poz))
+        self.maszk = pygame.mask.from_surface(self.kep)
+        self.lathato = True
 
-    def update(self, game_speed):  # Hozzáadtuk a game_speed paramétert
-        if self.visible: # Only update if visible or to make it reappear
-            self.x -= game_speed * 0.5  # Felhők fele olyan gyorsan mozognak
+    def frissites(self, aktualis_jatek_sebesseg):
+        """Frissiti a penz poziciojat."""
+        if self.lathato:
+            self.x_poz -= aktualis_jatek_sebesseg * 0.5
         
-        if self.x < -self.width and not self.visible: # Logic for reappearing if it was collected
-            self.x = SCREEN_WIDTH + random.randint(2500, 3000)
-            self.y = random.randint(50, 100)
-            self.collided = False  # Reseteljük az ütközés jelzőt
-            self.visible = True # <<< ADDED: Make it visible again
-        elif self.x < -self.width and self.visible: # Logic for reappearing if it just went off screen
-             self.x = SCREEN_WIDTH + random.randint(2500, 3000)
-             self.y = random.randint(50, 100)
-             self.collided = False # Reset collision state
+        if self.x_poz < -self.szelesseg:
+            if not self.lathato :
+                self.x_poz = KEPERNYO_SZELESSEG + random.randint(2500, 3000)
+                self.y_poz = random.randint(50, 100)
+                self.lathato = True
+            elif self.lathato:
+                 self.x_poz = KEPERNYO_SZELESSEG + random.randint(2500, 3000)
+                 self.y_poz = random.randint(50, 100)
+
+        self.terulet.x = int(self.x_poz)
+        self.terulet.y = int(self.y_poz)
+
+    def rajzol(self, rajzfelulet):
+        """Kirajzolja a penzt, ha lathato."""
+        if self.lathato:
+            rajzfelulet.blit(self.kep, (self.x_poz, self.y_poz))
 
 
-        # Update the rect's position
-        self.rect.x = int(self.x)
-        self.rect.y = int(self.y)
+class Akadaly: # Korabban Obstacle
+    """Alap osztaly a jatekban talalhato osszes akadaly szamara."""
+    def __init__(self, kep_lista, akadaly_tipus_index):
+        self.kep_lista = kep_lista
+        self.akadaly_tipus_index = akadaly_tipus_index
+        self.kep = self.kep_lista[self.akadaly_tipus_index]
+        self.terulet = self.kep.get_rect()
+        self.terulet.x = KEPERNYO_SZELESSEG
+        self.terulet.y = 370
+        self.maszk = pygame.mask.from_surface(self.kep)
 
-    def draw(self, SCREEN):
-        if self.visible: # <<< ADDED: Only draw if visible
-            SCREEN.blit(self.image, (self.x, self.y))
+    def frissites(self, aktualis_jatek_sebesseg, akadalyok_lista_ref):
+        """Frissiti az akadaly poziciojat es eltavolitja, ha szukseges."""
+        self.terulet.x -= aktualis_jatek_sebesseg
+        if self.terulet.x < -self.terulet.width:
+            if self in akadalyok_lista_ref:
+                akadalyok_lista_ref.pop(akadalyok_lista_ref.index(self))
 
-
-class Obstacle:
-    def __init__(self, image, type):
-        self.image = image
-        self.type = type
-        self.rect = self.image[self.type].get_rect()
-        self.rect.x = SCREEN_WIDTH
-        self.rect.y = 370
-        self.mask = pygame.mask.from_surface(
-            self.image[self.type]
-        )  # Maszk létrehozása
-
-    def update(self, game_speed):  # Hozzáadtuk a game_speed paramétert
-        self.rect.x -= game_speed  # Akadályok sebessége változatlan marad
-        if self.rect.x < -self.rect.width:
-            obstacles.pop(0)  # Javítva: az első elemet távolítjuk el
-
-    def draw(self, SCREEN):
-        SCREEN.blit(self.image[self.type], self.rect)
+    def rajzol(self, rajzfelulet):
+        """Kirajzolja az akadaly."""
+        rajzfelulet.blit(self.kep, self.terulet)
 
 
-class SmallAvocado(Obstacle):
-    def __init__(self, image):
-        self.type = random.randint(0, len(image) - 1)  # changed
-        super().__init__(image, self.type)
+class KisAvokado(Akadaly): # Korabban SmallAvocado
+    """Kis avokado akadaly."""
+    def __init__(self, kep_lista):
+        valasztott_tipus_index = random.randint(0, len(kep_lista) - 1)
+        super().__init__(kep_lista, valasztott_tipus_index)
 
 
-class LargeAvocado(Obstacle):
-    def __init__(self, image):
-        self.type = random.randint(0, len(image) - 1)  # changed
-        super().__init__(image, self.type)
+class NagyAvokado(Akadaly): # Korabban LargeAvocado
+    """Nagy avokado akadaly."""
+    def __init__(self, kep_lista):
+        valasztott_tipus_index = random.randint(0, len(kep_lista) - 1)
+        super().__init__(kep_lista, valasztott_tipus_index)
 
 
-class Heli(Obstacle):
-    def __init__(self, image):
-        self.type = 0
-        super().__init__(image, self.type)
-        self.rect.y = 300
-        self.index = 0
+class Heli(Akadaly): # Nev marad Heli
+    """Helikopter akadaly."""
+    def __init__(self, kep_lista):
+        self.animacio_index = 0
+        super().__init__(kep_lista, 0)
+        self.terulet.y = 300
 
-    def draw(self, SCREEN):
-        if self.index >= 9:
-            self.index = 0
-        SCREEN.blit(self.image[self.index // 5], self.rect)
-        self.index += 1
-
-    def update(self, game_speed):  # Hozzáadtuk a game_speed paramétert
-        self.rect.x -= game_speed  # Akadályok sebessége változatlan marad
-        if self.rect.x < -self.rect.width:
-            obstacles.pop(0)  # Javítva: az első elemet távolítjuk el
-
+    def rajzol(self, rajzfelulet):
+        """Kirajzolja a helikoptert, animalva azt."""
+        aktualis_kepkocka = self.kep_lista[self.animacio_index // 5]
+        rajzfelulet.blit(aktualis_kepkocka, self.terulet)
+        
+        self.animacio_index += 1
+        if self.animacio_index >= len(self.kep_lista) * 5:
+            self.animacio_index = 0
+        # A maszk frissitese itt is elmarad az egyszeruseg kedveert
 
 
-def main():
-    global game_speed, x_pos_bg, y_pos_bg, points, obstacles, cloud, x_pos_bg_background, player_name
-    run = True
-    clock = pygame.time.Clock()
-    player = Viktosaur()
-    cloud = Cloud()  # A Cloud objektum létrehozása változatlan marad
-    game_speed = 20
-    x_pos_bg = 0
-    y_pos_bg = 380
-    x_pos_bg_background = 0  # Háttér x pozíciója
-    points = 0 # Pontszám inicializálása
-    # Font betöltése
-    font = pygame.font.Font("PressStart2P-Regular.ttf", 16)  # Kisebb betűméret
-    obstacles = []
-    death_count = 0
-    game_over = False
-
-    def score():
-        global points, game_speed
-        points += 1
-        if points % 100 == 0:
-            game_speed += 1
-
-        text = font.render("Pontok: " + str(points), True, (0, 0, 0))
-        textRect = text.get_rect()
-        textRect.center = (900, 40)  # Beljebb helyezve a vízszintes pozíciót
-        SCREEN.blit(text, textRect)
-
-    def background():
-        global x_pos_bg, y_pos_bg, x_pos_bg_background
-        image_width_bg = BACKGROUND.get_width()
-        SCREEN.blit(BACKGROUND, (x_pos_bg_background, 0))  # Háttér rajzolása
-        SCREEN.blit(BACKGROUND, (image_width_bg + x_pos_bg_background, 0))
-        if x_pos_bg_background <= -image_width_bg:
-            SCREEN.blit(BACKGROUND, (image_width_bg + x_pos_bg_background, 0))
-            x_pos_bg_background = 0
-        x_pos_bg_background -= game_speed * 0.25  # Háttér fele olyan gyorsan mozog
-        # Háttér sebességének csökkentése: eredetileg game_speed * 0.5 volt
-
-        # image_width_track = BG.get_width()
-        # SCREEN.blit(BG, (x_pos_bg, y_pos_bg))
-        # SCREEN.blit(BG, (image_width_track + x_pos_bg, y_pos_bg))
-        # if x_pos_bg <= -image_width_track:
-        #     SCREEN.blit(BG, (image_width_track + x_pos_bg, y_pos_bg))
-        #     x_pos_bg = 0
-        # x_pos_bg -= game_speed  # Akadályok sebessége nem változik
-
-    while run:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                run = False
-
-        SCREEN.fill((255, 255, 255))
-
-        background()  # Először a háttér rajzolása
-
-        cloud.draw(SCREEN)
-        cloud.update(game_speed)  # Felhők sebessége már a Cloud osztályban van kezelve
-
-        player.draw(SCREEN)
-        userInput = pygame.key.get_pressed()  # Itt kérdezzük le a billentyűzet állapotát
-        player.update(userInput)
-
-        if len(obstacles) == 0:
-            if random.randint(0, 2) == 0:
-                obstacles.append(SmallAvocado(SMALL_AVOCADO))
-            elif random.randint(0, 2) == 1:
-                obstacles.append(LargeAvocado(LARGE_AVOCADO))
-            elif random.randint(0, 2) == 2:
-                obstacles.append(Heli(HELI))
-
-        for obstacle in obstacles:
-            obstacle.draw(SCREEN)
-            obstacle.update(game_speed)  # Akadályok sebessége nem változik
-
-            # Pontosabb ütközésvizsgálat maszkokkal
-            offset_x = obstacle.rect.x - player.Viktor_rect.x
-            offset_y = obstacle.rect.y - player.Viktor_rect.y
-            
-            if player.mask.overlap(obstacle.mask, (offset_x, offset_y)):
-                collision_sound.play()
-                pygame.mixer.music.stop()
-                game_over_sound.play()
-                pygame.time.delay(2000)
-                death_count += 1
-                game_over = True  # Állítsuk a game_over változót True-ra
-                menu(death_count, points) # Pass the points to the menu function
-                return  # Fontos a visszatérés a main ciklusból
+# Modul szintu valtozok a jatekallapot megosztasahoz
+jatek_akadalyok_global = []
+jatek_penz_global = None
+jatekos_nev_global = ""
 
 
-        # Pontosabb ütközésvizsgálat maszkokkal
-        offset_x = cloud.rect.x - player.Viktor_rect.x
-        offset_y = cloud.rect.y - player.Viktor_rect.y
-        # Check for collision AND if the cloud is currently visible
-        if cloud.visible and player.mask.overlap(cloud.mask, (offset_x, offset_y)): # <<< MODIFIED: Added cloud.visible check
-            coin_sound.play()
-            points += 100
-            # cloud.pop(0) # <<< REMOVED/COMMENTED OUT: cloud is not a list, make it invisible instead
-            cloud.visible = False # <<< ADDED: Make the cloud invisible
-            # To make the cloud "disappear" and eventually reappear, we'll reset its position
-            # immediately or let the update logic handle its reappearance when it goes off-screen.
-            # For an immediate "new" coin, you could reset its position here:
-            # cloud.x = SCREEN_WIDTH + random.randint(800, 1000)
-            # cloud.y = random.randint(100, 150)
-            # cloud.visible = True # if you want it to reappear immediately in a new spot
-            # However, the current update logic will make it reappear once its original
-            # off-screen condition is met.
+def _pontszam_kijelzes_jatekon_belul(aktualis_pontok_ertek, aktualis_jatek_sebesseg_ertek, betutipus_obj):
+    """
+    Kiszamolja es megjeleniti az aktualis pontszamot a jatek kozben.
+    Visszaadja a frissitett pontszamot es jateksebesseget.
+    """
+    aktualis_pontok_ertek += 1
+    if aktualis_pontok_ertek > 0 and aktualis_pontok_ertek % 100 == 0:
+        aktualis_jatek_sebesseg_ertek += 1
 
+    pontszam_szoveg_felulet = betutipus_obj.render("Pontok: " + str(aktualis_pontok_ertek), True, (0, 0, 0))
+    pontszam_szoveg_terulet = pontszam_szoveg_felulet.get_rect()
+    pontszam_szoveg_terulet.center = (KEPERNYO_SZELESSEG - 150, 40)
+    KEPERNYO.blit(pontszam_szoveg_felulet, pontszam_szoveg_terulet)
+    return aktualis_pontok_ertek, aktualis_jatek_sebesseg_ertek
 
-        score()
+def _hatter_rajzolas_jatekon_belul(x_palya_poz, x_hatter_poz, y_palya_poz_ertek, aktualis_jatek_sebesseg_ertek):
+    """
+    Kirajzolja es gorgeti a jatek hatteret es palyajat.
+    Visszaadja a palya es a hatter frissitett X pozicioit.
+    """
+    hatterkep_szelesseg = HATTER_KEP.get_width()
+    KEPERNYO.blit(HATTER_KEP, (x_hatter_poz, 0))
+    KEPERNYO.blit(HATTER_KEP, (hatterkep_szelesseg + x_hatter_poz, 0))
+    x_hatter_poz -= aktualis_jatek_sebesseg_ertek * 0.25
+    if x_hatter_poz <= -hatterkep_szelesseg:
+        x_hatter_poz = 0
 
-        clock.tick(30)
-        pygame.display.update()
+    x_palya_poz -= aktualis_jatek_sebesseg_ertek
 
+    return x_palya_poz, x_hatter_poz
 
+def jatek_ciklus():
+    """A fo jatekciklus."""
+    global jatek_akadalyok_global, jatek_penz_global # Hozzaferes a modul szintu valtozokhoz
 
-def menu(death_count, points=0): # Add points as a parameter with a default value of 0
-    global game_speed, obstacles, player_name, LANDING_PAGE
-    run_menu = True
-    pygame.mixer.music.load("Assets/Sounds/background_music.mp3")  # Zene betöltése csak egyszer
-    pygame.mixer.music.play(-1)  # Zene indítása csak egyszer
-    game_over_sound.stop()  # Game over hang leállítása csak egyszer
-    font = pygame.font.Font("PressStart2P-Regular.ttf", 30)
-    input_box = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 50, 200, 40)
-    color_inactive = pygame.Color("lightskyblue")
-    color_active = pygame.Color("dodgerblue")
-    color = color_inactive
-    active = False
-    player_name = ""
-    high_scores = load_high_scores()  # Betöltjük a high score listát
+    jatek_fut = True
+    jatek_ora = pygame.time.Clock()
+    jatekos_karakter = ViktorSaurus()
+    
+    # Helyi valtozok a jatek_ciklus szamara
+    aktualis_jatek_sebesseg = 20
+    x_pozicio_palya = 0
+    y_pozicio_palya = 380
+    x_pozicio_tavoli_hatter = 0
+    aktualis_pontok = 0
+    jatekon_beluli_betutipus = pygame.font.Font("PressStart2P-Regular.ttf", 16)
+    
+    jatek_akadalyok_global.clear() 
+    jatek_penz_global = Penz() # Penz osztaly peldanyositasa
 
-    while run_menu:
-        # SCREEN.fill((255, 255, 255)) # Ezt a sort töröljük, hogy a háttér látszódjon
-        SCREEN.blit(LANDING_PAGE, (0, 0)) # Kirajzoljuk a kezdőoldal hátterét
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+    while jatek_fut:
+        for esemeny in pygame.event.get():
+            if esemeny.type == pygame.QUIT:
+                jatek_fut = False
                 pygame.quit()
-                run_menu = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if input_box.collidepoint(event.pos): # Changed collidePoint to collidepoint
-                    active = not active
+                exit()
+
+        KEPERNYO.fill((255, 255, 255))
+
+        x_pozicio_palya, x_pozicio_tavoli_hatter = _hatter_rajzolas_jatekon_belul(
+            x_pozicio_palya, x_pozicio_tavoli_hatter, y_pozicio_palya, aktualis_jatek_sebesseg
+        )
+
+        if jatek_penz_global:
+            jatek_penz_global.rajzol(KEPERNYO)
+            jatek_penz_global.frissites(aktualis_jatek_sebesseg)
+
+        jatekos_karakter.rajzol(KEPERNYO)
+        lenyomott_gombok = pygame.key.get_pressed()
+        jatekos_karakter.frissites(lenyomott_gombok)
+
+        if not jatek_akadalyok_global:
+            akadaly_valasztas_random = random.randint(0, 2)
+            if akadaly_valasztas_random == 0:
+                jatek_akadalyok_global.append(KisAvokado(KIS_AVOKADO_KEPEK))
+            elif akadaly_valasztas_random == 1:
+                jatek_akadalyok_global.append(NagyAvokado(NAGY_AVOKADO_KEPEK))
+            elif akadaly_valasztas_random == 2:
+                jatek_akadalyok_global.append(Heli(HELI_KEPEK))
+
+        for akadaly_elem in list(jatek_akadalyok_global):
+            akadaly_elem.rajzol(KEPERNYO)
+            akadaly_elem.frissites(aktualis_jatek_sebesseg, jatek_akadalyok_global)
+
+            eltolas_utkozes_x = akadaly_elem.terulet.x - jatekos_karakter.terulet.x
+            eltolas_utkozes_y = akadaly_elem.terulet.y - jatekos_karakter.terulet.y
+            if jatekos_karakter.maszk.overlap(akadaly_elem.maszk, (eltolas_utkozes_x, eltolas_utkozes_y)):
+                utkozes_hang.play()
+                pygame.mixer.music.stop()
+                jatek_vege_hang.play()
+                pygame.time.delay(2000)
+                menu_megjelenites(aktualis_pontok)
+                return
+
+        if jatek_penz_global and jatek_penz_global.lathato:
+            eltolas_penz_x = jatek_penz_global.terulet.x - jatekos_karakter.terulet.x
+            eltolas_penz_y = jatek_penz_global.terulet.y - jatekos_karakter.terulet.y
+            if jatekos_karakter.maszk.overlap(jatek_penz_global.maszk, (eltolas_penz_x, eltolas_penz_y)):
+                penz_hang.play()
+                aktualis_pontok += 100
+                jatek_penz_global.lathato = False
+
+        aktualis_pontok, aktualis_jatek_sebesseg = _pontszam_kijelzes_jatekon_belul(
+            aktualis_pontok, aktualis_jatek_sebesseg, jatekon_beluli_betutipus
+        )
+
+        pygame.display.update()
+        jatek_ora.tick(30)
+
+
+def menu_megjelenites(elert_pontszam_ertek=0): # Korabban show_menu
+    """Megjeleniti a jatekmenut, kezeli a nevbevitelt es a magas pontszamokat."""
+    global jatekos_nev_global # Hozzaferes a modul szintu jatekosnevhez
+
+    menu_aktiv_allapot = True
+    if not pygame.mixer.music.get_busy():
+        pygame.mixer.music.load("Assets/Sounds/background_music.mp3")
+        pygame.mixer.music.play(-1)
+    if jatek_vege_hang.get_num_channels() > 0:
+        jatek_vege_hang.stop()
+
+    menu_cim_betutipus = pygame.font.Font("PressStart2P-Regular.ttf", 30)
+    menu_bevitel_betutipus = pygame.font.Font("PressStart2P-Regular.ttf", 20)
+    menu_pontszam_betutipus = pygame.font.Font("PressStart2P-Regular.ttf", 16)
+
+    nev_beviteli_mezo_terulet = pygame.Rect(KEPERNYO_SZELESSEG // 2 - 150, KEPERNYO_MAGASSAG // 2 - 25, 300, 50)
+    szin_bevitel_inaktiv = pygame.Color("lightskyblue3")
+    szin_bevitel_aktiv = pygame.Color("dodgerblue2")
+    beviteli_mezo_aktualis_szin = szin_bevitel_inaktiv
+    nev_bevitel_aktiv = False
+    nev_bevitel_puffer = jatekos_nev_global if jatekos_nev_global else "" 
+
+    betoltott_legjobb_pontok = legjobb_pontok_betoltese()
+
+    while menu_aktiv_allapot:
+        KEPERNYO.blit(KEZDOOLDAL_KEP, (0, 0))
+
+        for esemeny in pygame.event.get():
+            if esemeny.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if esemeny.type == pygame.MOUSEBUTTONDOWN:
+                if nev_beviteli_mezo_terulet.collidepoint(esemeny.pos):
+                    nev_bevitel_aktiv = not nev_bevitel_aktiv
                 else:
-                    active = False
-                color = color_active if active else color_inactive
-            if event.type == pygame.KEYDOWN:
-                if active:
-                    if event.key == pygame.K_RETURN:
-                        if player_name:
-                            high_scores.append((player_name, points))
-                            save_high_scores(high_scores)  # Mentjük a high score listát
-                            points = 0  # Pontszám nullázása újraindításkor
-                            game_speed = 20  # Sebesség visszaállítása
-                            obstacles = []  # Akadályok törlése
-                            # Hívjuk meg a main függvényt a megfelelő változókkal
-                            player = Viktosaur() # Új Viktor példány
-                            cloud = Cloud()
-                            # Itt inicializáljuk újra a játék állapotát
-                            game_over = False
-                            death_count = 0
-                            main()
-                            return  # Exit the menu function
-                    elif event.key == pygame.K_BACKSPACE:
-                        player_name = player_name[:-1]
+                    nev_bevitel_aktiv = False
+                beviteli_mezo_aktualis_szin = szin_bevitel_aktiv if nev_bevitel_aktiv else szin_bevitel_inaktiv
+            if esemeny.type == pygame.KEYDOWN:
+                if nev_bevitel_aktiv:
+                    if esemeny.key == pygame.K_RETURN:
+                        jatekos_nev_global = nev_bevitel_puffer
+                        if jatekos_nev_global:
+                            betoltott_legjobb_pontok.append((jatekos_nev_global, elert_pontszam_ertek))
+                            legjobb_pontok_mentese(betoltott_legjobb_pontok)
+                        
+                        jatek_ciklus() 
+                        return
+                    elif esemeny.key == pygame.K_BACKSPACE:
+                        nev_bevitel_puffer = nev_bevitel_puffer[:-1]
                     else:
-                        player_name += event.unicode
+                        if len(nev_bevitel_puffer) < 15 :
+                            nev_bevitel_puffer += esemeny.unicode
 
-        text = font.render("Írd be a neved:", True, (0, 0, 0)) # Keep "Írd be a neved"
+        felszolito_szoveg_felulet = menu_cim_betutipus.render("Írd be a neved:", True, (0, 0, 0))
+        felszolito_szoveg_terulet = felszolito_szoveg_felulet.get_rect(center=(KEPERNYO_SZELESSEG // 2, KEPERNYO_MAGASSAG // 2 - 100))
+        KEPERNYO.blit(felszolito_szoveg_felulet, felszolito_szoveg_terulet)
 
-        text_rect = text.get_rect()
-        text_rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100)
-        SCREEN.blit(text, text_rect)
+        pygame.draw.rect(KEPERNYO, beviteli_mezo_aktualis_szin, nev_beviteli_mezo_terulet, 2)
+        nev_szoveg_felulet = menu_bevitel_betutipus.render(nev_bevitel_puffer, True, (0,0,0))
+        KEPERNYO.blit(nev_szoveg_felulet, (nev_beviteli_mezo_terulet.x + (nev_beviteli_mezo_terulet.w - nev_szoveg_felulet.get_width()) // 2 ,
+                                      nev_beviteli_mezo_terulet.y + (nev_beviteli_mezo_terulet.h - nev_szoveg_felulet.get_height()) // 2))
 
-        # Szövegdoboz rajzolása
-        pygame.draw.rect(SCREEN, color, input_box, 2)
-        text_surface = font.render(player_name, True, (0, 0, 0))
-        SCREEN.blit(
-            text_surface, (input_box.x + 5, input_box.y + 5)
-        )  # Szöveg megjelenítése a dobozban
+        legjobbpont_cim_felulet = menu_cim_betutipus.render("Legjobb Eredmények", True, (0, 0, 0))
+        legjobbpont_cim_terulet = legjobbpont_cim_felulet.get_rect(center=(KEPERNYO_SZELESSEG // 2, KEPERNYO_MAGASSAG // 2 + 100))
+        KEPERNYO.blit(legjobbpont_cim_felulet, legjobbpont_cim_terulet)
 
-        # High Score lista megjelenítése
-        high_score_text = font.render("Legjobb Eredmények", True, (0, 0, 0))
-        high_score_rect = high_score_text.get_rect()
-        high_score_rect.center = (
-            SCREEN_WIDTH // 2,
-            SCREEN_HEIGHT // 2 + 150, # Lejjebb hozzuk a legjobb eredményeket
-        )  # Középre igazítva
-        SCREEN.blit(high_score_text, high_score_rect)
-
-        # Top 5 high score megjelenítése
-        sorted_high_scores = sorted(high_scores, key=lambda x: x[1], reverse=True)[:5]
-        for i, (name, score) in enumerate(sorted_high_scores):
-            score_display = font.render(
-                f"{i + 1}. {name}: {score}", True, (0, 0, 0)
-            )
-            score_rect = score_display.get_rect()
-            score_rect.center = (
-                SCREEN_WIDTH // 2,
-                SCREEN_HEIGHT // 2 + 190 + i * 30, # Még lejjebb hozzuk a legjobb eredményeket
-            )  # Egymás alá
-            SCREEN.blit(score_display, score_rect)
+        rendezett_pontok_lista = sorted(betoltott_legjobb_pontok, key=lambda pont_elem: pont_elem[1], reverse=True)[:5]
+        for i, (nev_lp, pont_lp) in enumerate(rendezett_pontok_lista): # lp = legjobb pont
+            bejegyzett_pont_felulet = menu_pontszam_betutipus.render(f"{i + 1}. {nev_lp}: {pont_lp}", True, (0,0,0))
+            bejegyzett_pont_terulet = bejegyzett_pont_felulet.get_rect(center=(KEPERNYO_SZELESSEG // 2, KEPERNYO_MAGASSAG // 2 + 150 + i * 30))
+            KEPERNYO.blit(bejegyzett_pont_felulet, bejegyzett_pont_terulet)
 
         pygame.display.update()
 
 
-def load_high_scores():
-    """Betölti a high score listát fájlból."""
+def legjobb_pontok_betoltese():
+    """Betolti a legjobb pontszamokat a 'high_scores.txt' fajlbol."""
     try:
-        with open("high_scores.txt", "r") as f:
-            lines = f.readlines()
-            high_scores = []
-            for line in lines:
-                name, score = line.strip().split(":")
-                high_scores.append((name, int(score)))
-            return high_scores
+        with open("high_scores.txt", "r", encoding="utf-8") as fajl_obj:
+            pontok_adat = []
+            for sor_adat in fajl_obj:
+                sor_adat = sor_adat.strip()
+                if ":" in sor_adat:
+                    nev_resz, pont_resz_str = sor_adat.split(":", 1)
+                    try:
+                        pontok_adat.append((nev_resz, int(pont_resz_str)))
+                    except ValueError:
+                        print(f"Figyelmeztetes: Nem sikerult feldolgozni a pontszamot '{nev_resz}'-hez a sorbol: '{sor_adat}'")
+                elif sor_adat:
+                    print(f"Figyelmeztetes: Hibasan formazott sor kihagyasa a high_scores.txt-ben: '{sor_adat}'")
+            return pontok_adat
     except FileNotFoundError:
-        return []  # Ha nem létezik a fájl, üres listát ad vissza
-    except Exception as e:
-        print(f"Hiba a high score lista betöltésekor: {e}")
-        return []  # Hiba esetén is üres listát ad vissza, hogy a játék ne álljon meg
+        return []
+    except Exception as hiba_pontbetoltes:
+        print(f"Hiba a legjobb pontok betoltesekor: {hiba_pontbetoltes}")
+        return []
 
 
-def save_high_scores(high_scores):
-    """Elmenti a high score listát fájlba."""
+def legjobb_pontok_mentese(mentendo_pontok_lista):
+    """Elmenti a legjobb pontszamok listajat a 'high_scores.txt' fajlba."""
     try:
-        with open("high_scores.txt", "w") as f:
-            for name, score in high_scores:
-                f.write(f"{name}:{score}\n")
-    except Exception as e:
-        print(f"Hiba a high score lista mentésekor: {e}")
-        # Itt nem állítjuk meg a játékot, mert a mentés nem kritikus
+        with open("high_scores.txt", "w", encoding="utf-8") as fajl_obj:
+            for nev_mentes, pont_mentes in mentendo_pontok_lista:
+                fajl_obj.write(f"{nev_mentes}:{pont_mentes}\n")
+    except Exception as hiba_pontmentes:
+        print(f"Hiba a legjobb pontok mentésekor: {hiba_pontmentes}")
 
 
-# Futtasd a menüt a játék indításakor
+# --- Jatek Inditasa ---
 if __name__ == "__main__":
-    player_name = ""
-    menu(death_count=0)
+    # jatekos_nev_global mar modul szinten inicializalva van ("")
+    menu_megjelenites(elert_pontszam_ertek=0)
