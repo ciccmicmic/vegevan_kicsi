@@ -24,7 +24,7 @@ A játék automatikusan indul a neved megadása után a kezdőképernyőn.
 
 ## Cél
 
-A játék célja, hogy minél tovább életben maradj a pályán, elkerülve az ütközést a különböző akadályokkal (KisAvokado, NagyAvokado, Heli). Minden sikeresen átugrott vagy kikerült akadály után pontokat kapsz. Gyűjtsd össze a Penzeket további extra pontokért! A játék végén a pontszámodat elmentheted a legjobb eredmények listájába.
+A játék célja, hogy minél tovább életben maradj a pályán, elkerülve az ütközést a különböző akadályokkal (KisAvokado, NagyAvokado, Helikopter). Minden sikeresen átugrott vagy kikerült akadály után pontokat kapsz. Gyűjtsd össze a Penzeket további extra pontokért! A játék végén a pontszámodat elmentheted a legjobb eredmények listájába.
 
 ---
 
